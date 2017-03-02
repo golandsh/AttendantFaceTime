@@ -10,11 +10,19 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.shlomigoland.clock.attendantfacetime.MainActivity">
 
+    <SurfaceView
+        android:id="@+id/topSurfaceView"
+        android:layout_alignParentTop="true"
+        android:layout_width="fill_parent"
+        android:layout_height="150dp"
+        android:background="#ffffff"
+        />
+
     <Button
         android:text="Scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/btnMainScan" />

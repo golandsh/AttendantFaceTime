@@ -9,17 +9,16 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.shlomigoland.clock.attendantfacetime.MainActivity">
-    <TextureView
-        android:id="@+id/texture"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:layout_alignParentTop="true"/>
     <FrameLayout
         android:id="@+id/textureBottom"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/texture"
         android:layout_above="@+id/btn_takepicture" />
+    <TextureView
+        android:id="@+id/texture"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_alignParentTop="true"/>
     <Button
         android:id="@+id/btn_takepicture"
         android:layout_width="wrap_content"
@@ -27,4 +26,9 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:text="@string/take_picture" />
+    <TextureView
+        android:id="@+id/Fulltexture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"/>
 </RelativeLayout>

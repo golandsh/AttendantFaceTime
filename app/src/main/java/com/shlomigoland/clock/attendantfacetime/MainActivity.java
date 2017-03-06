@@ -1,6 +1,7 @@
 package com.shlomigoland.clock.attendantfacetime;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -48,11 +49,12 @@ import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
-public class MainActivity extends AppCompatActivity implements ZXingScannerView.ResultHandler {
+public class MainActivity extends Activity implements ZXingScannerView.ResultHandler {
     private static final String TAG = "MainActivity";
     private ZXingScannerView mScannerView;
     private Button takePictureButton;
     private TextureView textureView;
+    private TextureView FulltextureView;
     private FrameLayout bottomTextureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -80,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
+        FulltextureView = (TextureView) findViewById(R.id.Fulltexture);
+        FulltextureView.setSurfaceTextureListener(textureListener);
         bottomTextureView = (FrameLayout)findViewById(R.id.textureBottom);
         assert bottomTextureView != null;
         takePictureButton = (Button) findViewById(R.id.btn_takepicture);
@@ -115,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
             //This is called when the camera is open
             Log.e(TAG, "onOpened");
             cameraDevice = camera;
-            createCameraPreview();
+            createCameraPreview(cameraDevice.getId());
         }
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {
@@ -132,7 +136,10 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
+            //createCameraPreview();
+            mScannerView.stopCamera();
+            closeCamera();
+            openCamera(0);
         }
     };
     protected void startBackgroundThread() {
@@ -178,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
             // Orientation
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-            final File file = new File(Environment.getExternalStorageDirectory()+"/pic.jpg");
+            final File file = new File(Environment.getExternalStorageDirectory()+"/DCIM/Camera/pic.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -217,7 +224,10 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
+                    //createCameraPreview();
+                    mScannerView.stopCamera();
+                    closeCamera();
+                    openCamera(0);
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -237,11 +247,18 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
             e.printStackTrace();
         }
     }
-    protected void createCameraPreview() {
+    protected void createCameraPreview(String cameraID) {
+        SurfaceTexture texture;
         try {
-            SurfaceTexture texture = textureView.getSurfaceTexture();
-            assert texture != null;
-            texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            if (cameraID.equals("1")) {
+                texture = textureView.getSurfaceTexture();
+                texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            }
+            else {
+                texture = FulltextureView.getSurfaceTexture();
+                texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            }
+
             Surface surface = new Surface(texture);
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
@@ -265,11 +282,11 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
             e.printStackTrace();
         }
     }
-    private void openCamera() {
+    private void openCamera(int cameraSide) {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "is camera open");
         try {
-            cameraId = manager.getCameraIdList()[1];
+            cameraId = manager.getCameraIdList()[cameraSide];
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
@@ -319,31 +336,29 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e(TAG, "onResume");
-        startBackgroundThread();
-        if (textureView.isAvailable()) {
-            openCamera();
-        } else {
-            textureView.setSurfaceTextureListener(textureListener);
-            //bottomTextureView.setSurfaceTextureListener(bottomTextureListener);
-        }
+//        Log.e(TAG, "onResume");
+//        //startBackgroundThread();
+//        if (textureView.isAvailable()) {
+//            openCamera(1);
+//        } else {
+//            textureView.setSurfaceTextureListener(textureListener);
+//            //bottomTextureView.setSurfaceTextureListener(bottomTextureListener);
+//        }
     }
     @Override
     protected void onPause() {
         Log.e(TAG, "onPause");
         //closeCamera();
-        stopBackgroundThread();
+        //stopBackgroundThread();
         super.onPause();
     }
 
     private void startScan(){
-        openCamera();
+        openCamera(1);
 
         mScannerView = new ZXingScannerView(this);
-        setContentView(mScannerView);
         mScannerView.setResultHandler(this);
         mScannerView.startCamera();
-
         bottomTextureView.addView(mScannerView);
     }
 
